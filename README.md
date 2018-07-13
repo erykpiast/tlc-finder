@@ -1,6 +1,7 @@
 # tlc-finder
 
-Find all existing three-letter codes
+Find all existing three-letter codes using Wikipedia.
+The script basically checks if there is existing page under `https://en.wikipedia.org/wiki/CODE` address.
 
 ![screenshot](screenshot.png)
 
