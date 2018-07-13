@@ -3,6 +3,32 @@
 const chalk = require('chalk');
 const request = require('request-promise-native');
 
+async function batchProcess({ elements, perBatch }, callback) {
+    for (let i = 0; i < Math.ceil(elements.length / perBatch); i++) {
+        const elementsSlice = elements.slice(i * perBatch, (i + 1) * perBatch);
+        await callback(elementsSlice);
+    }
+}
+
+async function queryWikipediaForPages(pagesTitles) {
+    // see: https://www.mediawiki.org/wiki/API:Query
+    const ENDPOINT = 'https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2';
+    const LIMIT = 50;
+
+    const queryResult = [];
+
+    await batchProcess({
+        elements: pagesTitles,
+        perBatch: LIMIT
+    }, async function(pageTitlesSlice) {
+        const response = await request(ENDPOINT + `&titles=${pageTitlesSlice.join('|')}`);
+        const { query: { pages } } = JSON.parse(response);
+        queryResult.push(...pages);
+    });
+
+    return queryResult;
+}
+
 function getAllThreeLetterWords() {
     const dict = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const words = [];
@@ -16,30 +42,41 @@ function getAllThreeLetterWords() {
     return words;
 }
 
-const all = getAllThreeLetterWords();
-const exist = [];
-const doesNotExist = [];
+function getMaxThreeLetterWordsCountPerRow() {
+    const terminalWidth = process.stdout.columns;
+    return Math.floor(terminalWidth / (3 + 1));
+}
 
-console.log(`Searching for ${all.length} words...`);
+function byTitleAsc(a, b) {
+    return a.title.localeCompare(b.title);
+}
 
-all.reduce(async (prev, word) => {
-    await prev;
-    process.stdout.write(word + '... ');
-    try {
-        const {statusCode} = await request(`https://en.wikipedia.org/wiki/${word}`);
-        process.stdout.write(chalk.green('OK') + '\n');
-        exist.push(word);
-    } catch (err) {
-        process.stdout.write(chalk.red(err.statusCode) + '\n');
-        if (err.statusCode === 404) {
-            doesNotExist.push(word);
-        }
-    }
-}, Promise.resolve()).then(() => {
-    console.log(chalk.red(`Not existing: ${doesNotExist.length}`));
-    console.log(chalk.green(`Existing: ${exist.length}`));
-    process.exit(0);
-}, (err) => {
-   console.error(err);
-   process.exit(1);
-});
+async function reportThreeLetterWordsPagesStatus() {
+    const wordsList = getAllThreeLetterWords();
+    const wordsPerRow = getMaxThreeLetterWordsCountPerRow();
+    let missingCount = 0;
+
+    console.log(`Searching for ${wordsList.length} words...`);
+
+    await batchProcess({
+        elements: wordsList,
+        perBatch: wordsPerRow
+    }, async function (wordsInRow) {
+        const pages = await queryWikipediaForPages(wordsInRow);
+
+        const rowToPrint = pages
+            .sort(byTitleAsc)
+            .map(({ title, missing }) => missing ? chalk.red(title) : chalk.green(title))
+            .join(' ');
+
+        missingCount += pages.filter(({ missing }) => missing).length;
+
+        console.log(rowToPrint);
+    });
+
+    console.log(chalk.red(`Not existing: ${missingCount}`));
+    console.log(chalk.green(`Existing: ${wordsList.length - missingCount}`));
+}
+
+reportThreeLetterWordsPagesStatus()
+    .catch(err => console.error(err));
