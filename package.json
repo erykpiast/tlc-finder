@@ -1,0 +1,31 @@
+{
+  "name": "tlc-finder",
+  "version": "1.0.0",
+  "description": "Find all existing three-letter codes",
+  "main": "tlc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node tlc.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/erykpiast/tlc-finder.git"
+  },
+  "keywords": [
+    "tlc",
+    "three-letter",
+    "code",
+    "abbreviations"
+  ],
+  "author": "Eryk Napierała",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erykpiast/tlc-finder/issues"
+  },
+  "homepage": "https://github.com/erykpiast/tlc-finder#readme",
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
