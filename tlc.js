@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const chalk = require('chalk');
+const prettyTime = require('pretty-time');
 const request = require('request-promise-native');
 
 function getAllThreeLetterWords() {
@@ -22,6 +23,8 @@ const doesNotExist = [];
 
 console.log(`Searching for ${all.length} words...`);
 
+const start = process.hrtime();
+
 all.reduce(async (prev, word) => {
     await prev;
     process.stdout.write(word + '... ');
@@ -38,6 +41,8 @@ all.reduce(async (prev, word) => {
 }, Promise.resolve()).then(() => {
     console.log(chalk.red(`Not existing: ${doesNotExist.length}`));
     console.log(chalk.green(`Existing: ${exist.length}`));
+    console.log(`Errors: ${all.length - doesNotExist.length - exist.length}`);
+    console.log(`Finished in ${prettyTime(process.hrtime(start), 's')}`);
     process.exit(0);
 }, (err) => {
    console.error(err);
