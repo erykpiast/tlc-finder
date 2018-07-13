@@ -6,9 +6,9 @@ const request = require('request-promise-native');
 function getAllThreeLetterWords() {
     const dict = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const words = [];
-    for (let i = 0; i < dict.length - 1; i++) {
-        for (let j = 0; j < dict.length - 1; j++) {
-            for (let k = 0; k < dict.length - 1; k++) {
+    for (let i = 0; i < dict.length; i++) {
+        for (let j = 0; j < dict.length; j++) {
+            for (let k = 0; k < dict.length; k++) {
                 words.push(dict[i] + dict[j] + dict[k]);
             }
         }
