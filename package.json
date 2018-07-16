@@ -27,6 +27,7 @@
     "chalk": "^2.4.1",
     "pretty-time": "^1.1.0",
     "request": "^2.87.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "string-length": "^2.0.0"
   }
 }
